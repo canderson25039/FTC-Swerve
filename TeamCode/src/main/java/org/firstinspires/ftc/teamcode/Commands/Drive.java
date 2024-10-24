@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Commands;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.arcrobotics.ftclib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
@@ -30,6 +32,7 @@ public class Drive extends CommandBase {
     }
     public void execute(){
         m_drive.drive(m_forward.getAsDouble(),m_side.getAsDouble(),m_rot.getAsDouble());
+
     }
 }
 
