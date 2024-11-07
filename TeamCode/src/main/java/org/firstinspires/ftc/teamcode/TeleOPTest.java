@@ -15,15 +15,15 @@ import org.firstinspires.ftc.teamcode.Subsystems.SwerveModule;
 
 @TeleOp
 public class TeleOPTest extends CommandOpMode {
+    private DcMotorEx driveMotor0;
+    private CRServo swerveServo0;
+    private AnalogInput servoEncoder0;
     private DcMotorEx driveMotor1;
     private CRServo swerveServo1;
     private AnalogInput servoEncoder1;
-    private DcMotorEx driveMotor2;
+    private  DcMotorEx driveMotor2;
     private CRServo swerveServo2;
     private AnalogInput servoEncoder2;
-    private  DcMotorEx driveMotor3;
-    private CRServo swerveServo3;
-    private AnalogInput servoEncoder3;
     private SwerveDrive swerveDrive;
 
 
@@ -32,6 +32,10 @@ public class TeleOPTest extends CommandOpMode {
 
         //intialize swerve hardware
         //should move this to constants later on
+        //pod 0
+        driveMotor0 = hardwareMap.get(DcMotorEx.class, "driveMotor0");
+        swerveServo0 = hardwareMap.get(CRServo.class, "servo0");
+        servoEncoder0 = hardwareMap.get(AnalogInput.class, "servoEncoder0");
         //pod 1
         driveMotor1 = hardwareMap.get(DcMotorEx.class, "driveMotor1");
         swerveServo1 = hardwareMap.get(CRServo.class, "servo1");
@@ -40,17 +44,13 @@ public class TeleOPTest extends CommandOpMode {
         driveMotor2 = hardwareMap.get(DcMotorEx.class, "driveMotor2");
         swerveServo2 = hardwareMap.get(CRServo.class, "servo2");
         servoEncoder2 = hardwareMap.get(AnalogInput.class, "servoEncoder2");
-        //pod 3
-        driveMotor3 = hardwareMap.get(DcMotorEx.class, "driveMotor3");
-        swerveServo3 = hardwareMap.get(CRServo.class, "servo3");
-        servoEncoder3 = hardwareMap.get(AnalogInput.class, "servoEncoder3");
 
         //subsystems
+        SwerveModule swervePod0 = new SwerveModule(hardwareMap,driveMotor0, swerveServo0, servoEncoder0);
         SwerveModule swervePod1 = new SwerveModule(hardwareMap,driveMotor1, swerveServo1, servoEncoder1);
-        SwerveModule swervePod2 = new SwerveModule(hardwareMap,driveMotor1, swerveServo1, servoEncoder1);
-        SwerveModule swervePod3 = new SwerveModule(hardwareMap,driveMotor1, swerveServo1, servoEncoder1);
+        SwerveModule swervePod2 = new SwerveModule(hardwareMap,driveMotor2, swerveServo2, servoEncoder2);
 
-        swerveDrive = new SwerveDrive(hardwareMap, swervePod1, swervePod2, swervePod3);
+        swerveDrive = new SwerveDrive(hardwareMap, swervePod0, swervePod1, swervePod2);
 
         // controls
         GamepadEx dOP = new GamepadEx(gamepad1);
@@ -61,7 +61,7 @@ public class TeleOPTest extends CommandOpMode {
         schedule();
 
         // register  subsystems
-        register(swervePod1, swervePod2, swervePod3, swerveDrive);
+        register(swervePod0, swervePod1, swervePod2, swerveDrive);
 
 
         //default commands
