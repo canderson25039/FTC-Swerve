@@ -1,36 +1,53 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.hardware.ServoEx;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.CRServo;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class SwerveModule extends SubsystemBase {
-    private final Servo servo;
+    private final CRServo servo;
+    private final AnalogInput servoEncoder;
     private final DcMotorEx driveMotor;
     private final HardwareMap hardware;
-    private final double start;
+    private double currentPos;
+    private double targetPoition;
+    private double direction =1;
 
 
-    public SwerveModule(HardwareMap hardware, Double startAngle){
+
+    public SwerveModule(HardwareMap hardware, DcMotorEx driveMotor, CRServo servoMotor, AnalogInput servoEncoder){
         this.hardware = hardware;
-        this.start = startAngle;
-        //hard coded rn will fix later
-        driveMotor = hardware.get(DcMotorEx.class, "test");
-        servo = hardware.get(Servo.class, "testservo");
+        this.driveMotor = driveMotor;
+        this.servo = servoMotor;
+        this.servoEncoder = servoEncoder;
+        targetPoition =0;
+
     }
-    public void Swivle(double targetPoition){
-       servo.setPosition(targetPoition);
+
+    public void Swivle(double Position){
+        targetPoition = Position;
     }
-    public void sendPos(){
-        telemetry.addLine("POS is");
-        //+ servo.getAngle(AngleUnit.DEGREES)
+    public double sendPos(){
+        currentPos = servoEncoder.getVoltage() / 3.3 * 360;
+        return currentPos;
     }
+    @Override
+    public void periodic(){
+        if(targetPoition>currentPos) direction =1;
+        else direction =-1;
+
+        currentPos = servoEncoder.getVoltage()/3.3 *360;
+        if((currentPos>targetPoition-5 & currentPos<targetPoition+5)){
+            servo.setPower(0);
+        }
+        else if((currentPos>targetPoition-30 & currentPos<targetPoition+30)){
+            servo.setPower(.1*direction);
+        }
+        else servo.setPower(1*direction);
+    }
+
 }
