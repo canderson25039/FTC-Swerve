@@ -35,19 +35,32 @@ public class SwerveModule extends SubsystemBase {
         currentPos = servoEncoder.getVoltage() / 3.3 * 360;
         return currentPos;
     }
+    public void findDirection(){
+        int t = (int)targetPoition;
+        int c = (int)currentPos;
+        Integer[] checkDirection = {(t-360),(t-c),(t+360-c)};
+
+        int min = checkDirection[0];
+        for(int i =1; i<2; i++){
+            if(Math.abs(checkDirection[i])<Math.abs(min)) min=checkDirection[i];
+        }
+        direction = min/(Math.abs(min));
+
+    }
     @Override
     public void periodic(){
-        if(targetPoition>currentPos) direction =1;
-        else direction =-1;
-
         currentPos = servoEncoder.getVoltage()/3.3 *360;
         if((currentPos>targetPoition-5 & currentPos<targetPoition+5)){
             servo.setPower(0);
         }
         else if((currentPos>targetPoition-30 & currentPos<targetPoition+30)){
+            findDirection();
             servo.setPower(.1*direction);
         }
-        else servo.setPower(1*direction);
+        else{
+            findDirection();
+            servo.setPower(1*direction);
+        }
     }
 
 }
