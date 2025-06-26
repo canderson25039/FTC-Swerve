@@ -56,6 +56,9 @@ public class SwerveDriveCommand extends CommandBase {
     }
     @Override
     public  void execute(){
+        mod0.update();
+        mod1.update();
+        mod2.update();
         //get input from imu
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
 

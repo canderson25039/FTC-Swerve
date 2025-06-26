@@ -1,31 +1,21 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.button.Trigger;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-
-import org.firstinspires.ftc.teamcode.Commands.TestPodCommand;
-import org.firstinspires.ftc.teamcode.Commands.TestPodZeroCommand;
-import org.firstinspires.ftc.teamcode.Subsystems.SwervePod;
-import org.firstinspires.ftc.teamcode.Subsystems.SwervePodZeroing;
-import org.firstinspires.ftc.teamcode.Util.Constants;
-
-
 @TeleOp
 public class SwerveZeroingTeleOp extends CommandOpMode {
+
+    /* ----> Will add test code later this does not work with the new code <----
+---------------------------------------------------------------------------------------------------
+
     SwervePodZeroing swervepod0, swervepod1, swervepod2;
+
     TestPodZeroCommand testSwerve;
-    private GamepadEx driverGamepad;
+    private GamepadEx driverGamepad;*/
 
     @Override
     public void initialize() {
-        Constants constants = new Constants();
+        /*Constants constants = new Constants();
         AnalogInput encoder0 = hardwareMap.get(AnalogInput.class, "encoder0");
         AnalogInput encoder1 = hardwareMap.get(AnalogInput.class, "encoder1");
         AnalogInput encoder2 = hardwareMap.get(AnalogInput.class, "encoder2");
@@ -60,7 +50,7 @@ public class SwerveZeroingTeleOp extends CommandOpMode {
         yButton.whileActiveOnce(new InstantCommand(() -> testSwerve.setPos(90)));
 
         //schedule commands
-        schedule(testSwerve);
+        schedule(testSwerve);*/
 
     }
 }
