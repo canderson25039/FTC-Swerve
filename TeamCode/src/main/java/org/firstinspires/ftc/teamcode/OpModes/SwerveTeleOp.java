@@ -16,9 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Commands.SwerveDriveCommand;
-import org.firstinspires.ftc.teamcode.Commands.TestPodCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.SwerveModule;
-import org.firstinspires.ftc.teamcode.Subsystems.SwervePod;
 import org.firstinspires.ftc.teamcode.Util.Constants;
 
 import java.util.ArrayList;
@@ -28,13 +26,11 @@ import java.util.List;
 @TeleOp
 public class SwerveTeleOp extends CommandOpMode {
     IMU imu;
-    SwervePod swervepod0, swervepod1, swervepod2;
     SwerveModule swervemod0, swervemod1, swervemod2;
     List<SwerveModule> swerveMods = new ArrayList<>();
 
     SwerveDrive swerveDrive;
     SwerveDriveCommand swerveDriveCommand;
-    TestPodCommand testSwerve;
     private GamepadEx driverGamepad;
 
     @Override
@@ -82,7 +78,6 @@ public class SwerveTeleOp extends CommandOpMode {
         bButton.whileActiveOnce(new InstantCommand(() -> swerveDriveCommand.setHeading(0)));
 
         schedule(swerveDriveCommand);
-        register(swervepod1,swervepod0,swervepod2);
 
     }
 

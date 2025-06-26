@@ -102,12 +102,12 @@ public class SwerveDriveCommand extends CommandBase {
         telemetry.addLine("mod2 "+mod2.steeringVector.getAngle());
         telemetry.addLine("mod2 PID "+mod2.swervePod.getPidOutput());*/
         telemetry.addLine("rotField: "+rotField);
-        telemetry.addLine("target heading: "+targetHeading);
-        telemetry.addLine("heading: "+currentHeading);
+        telemetry.addLine("target heading: "+(targetHeading+90));
+        telemetry.addLine("heading: "+(currentHeading+90));
         telemetry.update();
     }
     public void setHeading(double heading){
-        targetHeading = heading;
+        targetHeading = heading-90;
     }
     public double angleWrap(double angle) {
         while (angle > 180) angle -= 360;
