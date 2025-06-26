@@ -1,124 +1,86 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import static com.arcrobotics.ftclib.util.MathUtils.clamp;
-import com.acmerobotics.dashboard.config.Config;
-import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.mineinjava.quail.SwerveModuleBase;
+import com.mineinjava.quail.util.geometry.Vec2d;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.hardware.motors.Motor.GoBILDA;
-import org.firstinspires.ftc.teamcode.Util.AxonCRServo;
 
-/**
- * Coaxial swerve module subsystem.<br>
- * <b>Specifications:</b>
- * <ul>
- *   <li>GoBilda 435 rpm 5203 series hex-shaft DC motor.</li>
- *   <li>Axon MAX+ brushless programmable servo (Continuous Rotation mode).</li>
- * </ul>
- */
-public class SwerveModule extends SubsystemBase {
-
-    // Swerve config encapsulation
-    @Config
-    public static class SwerveConfig {
-        // Constants
-        public static double kP, kI, kD, kF, tolerance, falloff;    // TEMPORARILY static for ftc-dashboard tuning
-        public final GoBILDA MOTOR_TYPE;
-
-        // Specific constructor
-        public SwerveConfig(double kP, double kI, double kD, double kF, double tolerance, double falloff,
-                            GoBILDA motorType) {
-            SwerveConfig.kP = kP;
-            SwerveConfig.kI = kI;
-            SwerveConfig.kD = kD;
-            SwerveConfig.kF = kF;
-            SwerveConfig.tolerance = tolerance;
-            SwerveConfig.falloff = falloff;
-            MOTOR_TYPE = motorType;
-        }
-
-        // Default constructor
-        public SwerveConfig() {
-            this(0.1, 0.0, 0.0, 0.001, 3.0, 5.0, GoBILDA.RPM_435);
-        }
-    }
-
-    // Objects
-    private final SwerveConfig config;
-    private final MotorEx driveMotor;   // https://docs.ftclib.org/ftclib/features/hardware/motors
-    private final AxonCRServo servo;
-    private final PIDFController servoPIDFController;
-
-    // Config constructor
-    public SwerveModule(HardwareMap hardware, String driveMotorID, String servoID, String servoEncoderID,
-                        SwerveConfig swerveConfig) {
-        config = swerveConfig;
-        this.driveMotor = new MotorEx(hardware, driveMotorID, config.MOTOR_TYPE);
-        this.servo = new AxonCRServo(hardware, servoID, servoEncoderID);
-        servoPIDFController = new PIDFController(config.kP, config.kI, config.kD, config.kF);
-        servoPIDFController.setSetPoint(0.0);
-
-        // Init target variables
-        targetAngle = 100.0;
-        targetSpeed = 0.0;
-    }
-
-    // Default constructor
-    public SwerveModule(HardwareMap hardware, String driveMotorID, String servoID, String servoEncoderID) {
-        this(hardware, driveMotorID, servoID, servoEncoderID, new SwerveConfig());
-    }
-
-    // Target variables and setters
-    private double targetAngle;
+public class SwerveModule extends SwerveModuleBase {
+    private final CRServo servo;
+    private final AnalogInput servoEncoder;
+    private final DcMotor driveMotor;
+    private final HardwareMap hardware;
+    private double servoOffset;
+    private double currentPos;
+    private double targetPoition;
+    private double currentError;
     private double targetSpeed;
-    public void setTargetAngle(double angle) {
-        targetAngle = angle;
+    private PIDController pidController;
+
+    public SwerveModule(Vec2d pos, HardwareMap hardware, CRServo servoMotor, DcMotor motor, AnalogInput servoEncoder, double offset){
+        super(pos, 1, 1);
+
+        //pass all hardware and intizalize PID
+        this.hardware = hardware;
+        //this.driveMotor = driveMotor;
+        this.servo = servoMotor;
+        this.servoEncoder = servoEncoder;
+        driveMotor = motor;
+
+        this.servoOffset = offset;
+        targetPoition =0;
+        targetSpeed=0;
+
+        pidController = new PIDController(0.015,0,0.00);//actually tune these for once
+
     }
-    public void setTargetSpeed(double speed) {
-        targetSpeed = speed;
-    }
-
-    // Maintain angle
-    public void maintainAngle() {
-        // Reset PIDF constants for training when they are changed with FTC dashboard
-        servoPIDFController.setPIDF(config.kP, config.kI, config.kD, config.kF);
-        servoPIDFController.setTolerance(config.tolerance);
-
-        // Calculate turn power using the PID controller
-        double angleDiff = angleError(servo.getDegrees(), targetAngle);
-        double turnPower = servoPIDFController.atSetPoint() ? 0.0 : servoPIDFController.calculate(angleDiff);
-
-        // Limit the power
-        turnPower = clamp(turnPower / config.falloff, -1.0, 1.0);
-        servo.setPower(turnPower);
-    }
-
-    // Maintain speed
-    public void maintainSpeed() {
-    }
-
-    // Math utility to calculate shortest path between two degree values
-    public static double angleError(double sourceDegrees, double destDegrees){
-        // 540 degrees is necessary because modulo keeps sign in Java, and we need a positive value
-        return (destDegrees - sourceDegrees + 540) % 360 - 180;
-    }
-
-    // Always maintain angle and speed
     @Override
-    public void periodic(){
-        maintainAngle();
-        maintainSpeed();
+    public void setAngle(double angle){
+        angle = Math.toDegrees(angle);
+        angle = normalizeAngleDeg(angle);
+        targetPoition=angle;
+    }
+    @Override
+    public void setRawSpeed(double speed){
+        if(Math.abs(currentError)<10)//make constant
+            targetSpeed=speed;
+        else
+            targetSpeed=speed/4;
+    }
+    public void update(){
+        if(targetPoition>180)
+            targetPoition=targetPoition-360;
+        currentPos = (servoEncoder.getVoltage() / 3.3 * 360)+servoOffset;
+        if(currentPos>180)
+            currentPos=currentPos-360;
+        currentError= targetPoition-currentPos;
+        if(currentError>180)
+            currentError = -(currentError-180);
+        else if(currentError<-180)
+            currentError = -(currentError+180);
+
+        if(Math.abs(currentError)<2)//make constant
+            servo.setPower(0);
+        else if(Double.isNaN(pidController.calculate(currentError)))
+            servo.setPower(0);
+        else
+            servo.setPower(pidController.calculate(currentError));
+
+        if(driveMotor.getPower()!=targetSpeed)
+            driveMotor.setPower(targetSpeed);
+
     }
 
-    // FTC-dashboard debug functions
-    public double debugServoDegrees() {
-        return servo.getDegrees();
+    public static double normalizeAngleDeg(double angle) {
+        return angleDifferenceDeg(0, angle, 360);
     }
-    public double debugAngleError() {
-        return angleError(debugServoDegrees(), targetAngle);
-    }
-    public double debugPIDFOutput() {
-        return servoPIDFController.calculate(debugAngleError());
+    public static double angleDifferenceDeg(double currentAngle, double targetAngle, int wrapAngle) {
+        double result1 = Math.floorMod(Math.round((targetAngle - currentAngle) * 100), wrapAngle * 100L) * 0.01;
+        double result2 = Math.floorMod(Math.round((targetAngle - currentAngle) * 100), -wrapAngle * 100L) * 0.01;
+        if (Math.abs(result1) <= Math.abs(result2)) return result1;
+        else return result2;
     }
 }
